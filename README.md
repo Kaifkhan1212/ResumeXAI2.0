@@ -96,8 +96,8 @@ The **AI Detection** and **Advisor** modules use Gemini 2.5 Flash. It utilizes s
 ### 1. Backend Setup
 ```bash
 # Clone the repository
-git clone https://github.com/Kaifkhan1212/AI-Resume-Analyzer
-cd "AI-Resume-Analyzer"
+git clone https://github.com/Kaifkhan1212/ResumeXAI.git
+cd "ResumeXAI"
 
 # Create and activate virtual environment
 python -m venv venv
