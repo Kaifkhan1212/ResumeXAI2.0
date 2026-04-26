@@ -1,4 +1,4 @@
-# AI Resume Analyzer 🚀
+# ResumeXAI – AI-Powered Resume Analysis System 🚀
 
 ResumeXAI is a premium, production-grade AI SaaS platform designed for professional resume analysis and optimization. Orchestrated with a "Clean Architecture" philosophy, it leverages Natural Language Processing, Machine Learning, and High-Performance Generative AI (powered by **Groq LPU**) to provide high-fidelity insights into candidate suitability, match scores, and resume authenticity.
 
@@ -84,7 +84,7 @@ The platform features a high-end, editorial user experience inspired by the aest
 ```bash
 # Clone the repository
 git clone https://github.com/Kaifkhan1212/AI-Resume-Analyzer
-cd "AI-Resume-Analyzer"
+cd AI-Resume-Analyzer
 
 # Initialize Environment
 python -m venv venv
