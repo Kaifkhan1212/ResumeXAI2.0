@@ -28,7 +28,12 @@ def create_app() -> FastAPI:
     # Database setup on startup
     @app.on_event("startup")
     def on_startup():
-        init_db()
+        try:
+            init_db()
+            print("Database initialized successfully ✅")
+        except Exception as e:
+            print(f"Database initialization failed: {e} ❌")
+            # We don't raise here so the app can still start (useful for health checks)
 
     # CORS Middleware
     app.add_middleware(
