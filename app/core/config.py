@@ -11,7 +11,15 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     # Database
-    DATABASE_URL: str = "postgresql://user:password@localhost:5432/resume_db"
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/resume_db")
+
+    if os.getenv("DATABASE_URL"):
+        print("✅ DATABASE_URL found in system environment!")
+        # Fix Render's "postgres://" to "postgresql://" for SQLAlchemy
+        if DATABASE_URL.startswith("postgres://"):
+            DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    else:
+        print("⚠️ DATABASE_URL NOT FOUND in environment! Using default localhost.")
 
     # Security
     SECRET_KEY: str = "your-secret-key-change-me"
