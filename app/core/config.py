@@ -30,8 +30,11 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=True,
-        extra="ignore" # Ignore extra env vars
+        case_sensitive=False, # Changed to False for better compatibility
+        extra="ignore"
     )
 
 settings = Settings()
+# Masked log for debugging
+db_url_start = settings.DATABASE_URL.split('@')[-1] if '@' in settings.DATABASE_URL else settings.DATABASE_URL
+print(f"DATABASE_URL detected: ...@{db_url_start}")
