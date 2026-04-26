@@ -11,5 +11,10 @@ python-docx
 scikit-learn
 joblib
 pandas
-google-generativeai
+google-genai
+# Auth
+passlib[bcrypt]
+bcrypt==4.0.1
+python-jose[cryptography]
+google-auth
 # Add other dependencies here

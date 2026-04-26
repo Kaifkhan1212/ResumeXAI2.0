@@ -6,7 +6,7 @@ from . import models
 
 # Note: models must be imported before create_all for discovery
 def init_db():
-    Base.metadata.drop_all(bind=engine) # Drop to fix schema mismatch
+    # Base.metadata.drop_all(bind=engine) # Commented out to prevent data loss
     Base.metadata.create_all(bind=engine)
 
 from .routes import (
@@ -14,7 +14,8 @@ from .routes import (
     analyze_router,
     probability_router,
     detector_router,
-    full_analysis_router
+    full_analysis_router,
+    auth_router
 )
 
 def create_app() -> FastAPI:
@@ -32,11 +33,19 @@ def create_app() -> FastAPI:
     # CORS Middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:5173"],
+        allow_origin_regex=r"http://localhost:\d+",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+
+
+    @app.middleware("http")
+    async def coop_fix(request, call_next):
+        response = await call_next(request)
+        response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+        return response
 
     # Health Check Endpoint
     @app.get("/health", tags=["Health"])
@@ -53,6 +62,7 @@ def create_app() -> FastAPI:
     app.include_router(probability_router, prefix="/api/v1")
     app.include_router(detector_router, prefix="/api/v1")
     app.include_router(full_analysis_router, prefix="/api/v1", tags=["Full Analysis"])
+    app.include_router(auth_router, prefix="/api/v1")
 
     return app
 

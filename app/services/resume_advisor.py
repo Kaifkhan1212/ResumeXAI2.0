@@ -1,28 +1,36 @@
 import json
-import google.generativeai as genai
+from groq import Groq
 from fastapi import HTTPException, status
 from ..core.config import settings
 
 class ResumeAdvisorService:
     def __init__(self):
-        if settings.GEMINI_API_KEY:
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-            try:
-                self.model = genai.GenerativeModel('gemini-2.5-flash')
-            except Exception:
-                self.model = genai.GenerativeModel('gemini-2.5-pro')
+        if settings.GROQ_API_KEY:
+            self.client = Groq(api_key=settings.GROQ_API_KEY)
+            self.model_id = 'llama-3.3-70b-versatile'
         else:
-            self.model = None
+            self.client = None
+            self.model_id = None
 
     async def generate_resume_suggestions(self, resume_text: str, jd_text: str, missing_skills: list, match_score: float) -> dict:
-        if not self.model:
-            return {
-                "improvement_suggestions": [],
-                "overall_feedback": "Advisor service unavailable (API key missing)."
-            }
+        # Default/Fallback Suggestions based on requirements
+        fallback_suggestions = [
+            "Add missing technologies such as AWS, Docker, or Microservices.",
+            "Include project descriptions demonstrating real-world experience.",
+            "Quantify achievements with measurable results."
+        ]
+        
+        fallback_response = {
+            "improvement_suggestions": fallback_suggestions,
+            "overall_feedback": "AI summary unavailable. Please review missing skills and improve your resume."
+        }
+
+        # Validation check before calling the model
+        if not self.client:
+            return fallback_response
 
         prompt = f"""
-        Act as an expert career advisor. Analyze the following resume against the job description.
+        Act as an expert senior executive recruiter and career advisor. Analyze the following resume against the job description with extreme detail.
         
         Resume:
         {resume_text}
@@ -35,36 +43,45 @@ class ResumeAdvisorService:
         
         Current Match Score: {match_score}%
         
-        Provide actionable, personalized suggestions to improve the resume quality and match the JD better.
+        Provide high-level, actionable, and personalized suggestions to transform this resume into a top-tier candidate profile.
+        
         Return the result STRICTLY as a JSON object with the following structure:
         {{
-            "improvement_suggestions": ["Suggestion 1", "Suggestion 2", ...],
-            "overall_feedback": "A summary of the resume's strengths and weaknesses."
+            "improvement_suggestions": [
+                "Detailed Suggestion 1 (Mention specific resume locations and exact technical phrases to add)",
+                "Detailed Suggestion 2", 
+                "Detailed Suggestion 3",
+                "Detailed Suggestion 4",
+                "Detailed Suggestion 5",
+                "Detailed Suggestion 6"
+            ],
+            "overall_feedback": "A thorough, multi-paragraph (at least 200 words) deep-dive evaluation of the resume's strengths, critical technical gaps, formatting improvements, and overall narrative impact. Talk about how the candidate can specifically bridge the {100 - match_score}% gap."
         }}
         """
 
         try:
-            response = self.model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    response_mime_type="application/json",
-                ),
+            # Main model execution with error handling
+            response = self.client.chat.completions.create(
+                model=self.model_id,
+                messages=[
+                    {"role": "system", "content": "You are an expert senior executive recruiter and career advisor. Return all insights in STRICT JSON format."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_object"},
             )
             
             try:
-                result = json.loads(response.text)
+                result = json.loads(response.choices[0].message.content)
                 return result
             except json.JSONDecodeError:
-                return {
-                    "improvement_suggestions": [f"Focus on learning: {', '.join(missing_skills[:3])}"],
-                    "overall_feedback": "Could not generate detailed feedback."
-                }
+                print(f"Groq JSON Parsing Error: {response.text}")
+                return fallback_response
 
         except Exception as e:
-            print(f"Resume Advisor Error: {e}")
-            return {
-                "improvement_suggestions": [],
-                "overall_feedback": "Service encountered an error while generating suggestions."
-            }
+            # Log Groq errors clearly for debugging
+            print(f"Groq Error: {e}")
+            import traceback
+            traceback.print_exc()
+            return fallback_response
 
 resume_advisor_service = ResumeAdvisorService()

@@ -5,7 +5,7 @@ from ..services.probability_model import probability_model_service, ProbabilityM
 router = APIRouter(tags=["Prediction"])
 
 class ProbabilityRequest(BaseModel):
-    match_score: float = Field(..., ge=0,调整le=100)
+    skill_match_score: float = Field(..., ge=0, le=100)
     skill_count: int = Field(..., ge=0)
     years_of_experience: float = Field(..., ge=0)
     education_score: int = Field(..., ge=1, le=5)

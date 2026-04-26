@@ -7,6 +7,7 @@ class ResumeAnalysis(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     filename = Column(String(255))
+    candidate_name = Column(String(255), nullable=True)
     resume_text = Column(Text)
     job_description = Column(Text)
     

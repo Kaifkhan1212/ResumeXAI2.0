@@ -1,79 +1,111 @@
-# System Workflow & Architecture 🛠️
+# System Workflow – ResumeXAI 🛠️
 
-This document provides a technical deep-dive into the end-to-end processing logic of the **AI Resume Analyzer**. It details the journey of a resume from upload to final intelligent visualization.
-
----
-
-## 🏗️ System Overview
-
-The AI Resume Analyzer is a multi-stage evaluation engine that combines **Classical NLP**, **Statistical Machine Learning**, and **Large Language Models (LLMs)**. The system is designed to provide not just a score, but a comprehensive, explainable analysis of a candidate's suitability for a specific role.
+This document details the end-to-end technical workflow of the **ResumeXAI – AI Powered Resume Analysis System**. It covers everything from user authentication to the final AI-driven evaluation report.
 
 ---
 
-## 🔄 End-to-End Workflow
+## 1. User Authentication
 
-### 1. Resume Submission & Text Extraction
-- **Input**: User uploads a PDF or DOCX file via the React frontend.
-- **Process**: The backend utilizes `PyPDF2` (for PDFs) and `python-docx` (for DOCX) to extract raw text.
-- **Output**: Cleaned, UTF-8 encoded plain text string.
+The platform requires users to authenticate before accessing the Resume Analysis Dashboard.
 
-### 2. Semantic Analysis & Skill Matching
-- **Technique**: TF-IDF (Term Frequency-Inverse Document Frequency) Vectorization.
-- **Logic**: The system builds a vocabulary from both the resume and the job description.
-- **Scoring**: **Cosine Similarity** is applied to the two vectors to generate a semantic match score (0-100%).
-- **Gap Analysis**: Set-based comparison between extracted skills from both texts to identify "Matched" and "Missing" competencies.
+**Authentication Methods:**
+- Email & Password Login
+- Google OAuth Login
 
-### 3. Feature Engineering & Selection Prediction
-- **Input**: Match Score, Skill Count, Experience Years (heuristic-based), and Education Level.
-- **ML Model**: **Logistic Regression** (Binary Classification).
-- **Process**: Features are normalized (0-1 scale) and passed through the trained `scikit-learn` model.
-- **Output**: A probabilistic value representing the "Selection Probability."
-
-### 4. Neural Evaluation (Generative AI)
-- **Model**: Google Gemini 2.5 Flash.
-- **Analysis**: The raw texts and calculated scores are sent to the LLM with a structured prompt.
-- **Modules**:
-    - **AI Detection**: Probability analysis based on linguistic patterns.
-    - **Neural Reasoning**: Explanatory text justifying the calculated scores.
-    - **Growth Blueprint**: Generates 3-5 high-impact, personalized suggestions.
-- **Parsing**: Strict JSON-mode response for seamless frontend integration.
-
-### 5. Persistence & Visualization
-- **Storage**: The entire `AnalysisResult` object is persisted in **PostgreSQL**.
-- **Display**: The React Dashboard receives the JSON response and renders dynamic charts (Recharts) and animated panels (Framer Motion).
+**Workflow:**
+1. User opens the **Login Page**.
+2. User chooses an authentication method.
+3. **Email/Password**: Credentials are sent to the FastAPI `/auth/login` endpoint.
+4. **Google Login**: User authenticates via Google; an OAuth ID token is returned to the frontend.
+5. **Validation**: Backend verifies either the local credentials or the Google ID token.
+6. **JWT Generation**: A secure **JWT Access Token** is generated for the session.
+7. **Storage**: The token is stored in the browser's `localStorage`.
+8. **Redirect**: User is securely redirected to the **Resume Analysis Dashboard**.
 
 ---
 
-## 🗺️ Architecture Flow Diagram
+## 2. Resume Submission
 
-```text
-[ User Interface ]  <--->  [ REST API Layer ]  <--->  [ Orchestrator ]
-      (React)               (FastAPI)              (Logic Control)
-                                |
-      __________________________|__________________________
-     |              |                    |                 |
-[ NLP Engine ] [ ML Service ] [ AI Detector/Advisor ] [ PostgreSQL ]
- (TF-IDF)      (LogReg)          (Gemini 2.5)          (SQLAlchemy)
+After authentication, users can interact with the main analysis interface.
+
+**Workflow:**
+1. User uploads a **Resume** (PDF or DOCX format).
+2. User provides a **Job Description** (Text input).
+3. Frontend triggers a request to the FastAPI analysis endpoint with the binary file and JD text.
+4. Backend initiates the processing pipeline.
+
+---
+
+## 3. Resume Processing Pipeline
+
+- **Step 1 – Resume Text Extraction**: The system uses specialized parsers (`PyPDF2`, `python-docx`) to extract raw text from binary files.
+- **Step 2 – AI Name Extraction**: The `Orchestrator` calls a Gemini-based service to identify the candidate's name from the raw text for the Executive Header.
+- **Step 3 – AI Skill Discovery**: Google Gemini analyzes the resume to extract technical skills, normalizes them, and identifies deep semantic overlap with the JD.
+- **Step 4 – Statistical NLP Analysis**: The system applies **TF-IDF Vectorization** and **Cosine Similarity** to provide a numerical "Match Score" baseline.
+- **Step 5 – ML Evaluation**: A trained **Logistic Regression** model predicts the shortlist probability.
+
+---
+
+## 4. Machine Learning Evaluation
+
+A trained **Logistic Regression** model (Binary Classification) evaluates the candidate's selection probability.
+
+**Weighted Features:**
+- Skill similarity score (NLP)
+- Skill density (AI Extracted count)
+- Technical keyword alignment
+- Educational/Experience heuristics
+
+---
+
+## 5. AI Generated Content Detection
+
+The system evaluates the language patterns of the resume to identify AI-generated components.
+
+**Alert Logic:**
+- **Score < 20% (Low)**: Emerald (Natural/Safe)
+- **Score 21-40% (Medium)**: Yellow (Caution)
+- **Score > 40% (High)**: **Red Alert** (High AI Probability)
+- **Label Priority**: If the system classifes a result as **"HIGH"**, the UI overrides any percentage to display a **Red Warning State**.
+
+---
+
+## 6. Executive Generative AI (Google Gemini)
+
+The system leverages **gemini-flash-latest** to providing deep qualitative insights.
+
+**Generated Reports:**
+- **Executive Reasoning**: A multi-paragraph, 150+ word analysis of clinical detail, structural tells, and data-backed evidence.
+- **Strategic Recommendations**: 6+ high-impact suggestions including specific technical phrases and sections to optimize.
+- **Analysis Final Assessment**: A 200+ word deep-dive into how the candidate can bridge the gap.
+
+---
+
+## 7. Result Visualization & Export
+
+The React dashboard renders the intelligence with optimized performance:
+
+- **Instant Delivery**: Typewriter animations are removed to ensure reports are "ready-to-read" immediately.
+- **PDF Report Engine**: Utilizing `html2canvas` with custom visibility overrides to capture a **single-page dynamic height report**.
+- **Executive Header**: The export includes a professional header with the candidate's name, report ID, and timestamp.
+
+---
+
+# Complete System Pipeline
+
+```mermaid
+graph TD
+    A[User Login] --> B[Resume & JD Submission]
+    B --> C[Text Extraction]
+    C --> D[AI Name Extraction]
+    D --> E[AI Skill Discovery & Normalization]
+    E --> F[NLP & ML Statistical Scoring]
+    F --> G[AI Content Warning Audit]
+    G --> H[Gemini reasoning & executive advice]
+    H --> I[Structured JSON Payload]
+    I --> J[Instant Dashboard Visualization]
+    J --> K[Dynamic PDF Report Export]
 ```
 
 ---
-
-## 📡 Data Flow Explanation
-
-1. **Client -> Server**: `Multipart/form-data` containing the binary file and JD string.
-2. **Server -> Services**: The `OrchestrationService` serially triggers extraction -> matching -> prediction -> AI evaluation.
-3. **Services -> Database**: **SQLAlchemy** commits the consolidated analysis model to the `resume_analyses` table.
-4. **Server -> Client**: A structured JSON payload containing 10+ data points for real-time dashboard rendering.
-
----
-
-## 🧠 Explainable AI (XAI) Implementation
-
-The system bridges the gap between **Black-Box AI** and **Transparent Analytics**:
-
-1. **Classical ML (Integrity)**: Statistical models (Logistic Regression) provide a bedrock of objective, repeatable scores based on hard features.
-2. **Generative AI (Intelligence)**: LLMs (Gemini) provide the "Why" behind the "What." While the ML model gives a 75% score, the LLM explains that this is due to a strong backend foundation but limited cloud exposure.
-3. **Synthesis**: By combining these two, the AI Resume Analyzer offers a "Growth Blueprint" that translates numerical data into actionable human advice.
-
----
-*Built as a technical reference for the AI Resume Analyzer System Architecture.*
+*Technical Documentation for the ResumeXAI Intelligent Evaluation Engine.*

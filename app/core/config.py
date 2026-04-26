@@ -20,6 +20,11 @@ class Settings(BaseSettings):
 
     # AI Services
     GEMINI_API_KEY: str = ""
+    GROQ_API_KEY: str = ""
+
+    # Google OAuth
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
 
     # Pydantic v2 configuration for loading from .env
     model_config = SettingsConfigDict(

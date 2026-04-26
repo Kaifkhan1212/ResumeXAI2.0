@@ -32,12 +32,13 @@ async def full_analysis(
         # Save to Database
         db_analysis = ResumeAnalysis(
             filename=file.filename,
+            candidate_name=result.get("candidate_name", "Candidate"),
             resume_text=result["resume_text"],
             job_description=job_description,
-            match_score=result["match_score"],
+            match_score=result["skill_match_score"],
             matched_skills=result["matched_skills"],
             missing_skills=result["missing_skills"],
-            selection_probability=result["selection_probability"],
+            selection_probability=result["selection_likelihood"],
             ai_generated_probability=result["ai_generated_probability"],
             confidence_level=result["confidence_level"],
             ai_reasoning=result["ai_reasoning"],
@@ -58,7 +59,8 @@ async def full_analysis(
 
     except Exception as e:
         db.rollback()
+        print("Analysis error:", str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Pipeline failure: {str(e)}"
+            detail="Resume analysis failed"
         )

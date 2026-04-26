@@ -36,46 +36,51 @@ class ProbabilityModelService:
                 )
 
         try:
-            # 1. Normalize input features as requested
-            # match_score -> divide by 100
-            norm_match = features.get("match_score", 0) / 100.0
-            
-            # skill_count -> scale between 0-1 (assuming max 20)
-            norm_skills = min(features.get("skill_count", 0) / 20.0, 1.0)
-            
-            # years_of_experience -> divide by 10 (max cap 10)
-            norm_exp = min(features.get("years_of_experience", 0) / 10.0, 1.0)
-            
-            # education_score -> scale 1-5 into 0-1
-            raw_edu = features.get("education_score", 1)
-            norm_edu = (max(1, min(5, raw_edu)) - 1) / 4.0
-            
-            normalized_features = {
-                'match_score': norm_match,
-                'skill_count': norm_skills,
-                'years_of_experience': norm_exp,
-                'education_score': norm_edu
-            }
+            # 1. Extract features
+            match_score = float(features.get("skill_match_score", features.get("match_score", 0)))
+            skill_count = float(features.get("skill_count", 0))
+            years_exp = float(features.get("years_of_experience", 0))
+            edu_score = float(features.get("education_score", 1))
 
-            # Prepare data for prediction
-            input_df = pd.DataFrame([normalized_features])
+            # 2. Calculate Weighted Probability (Deterministic)
+            # Weights: Skill Match (70%), Skill Depth (10%), Experience (15%), Education (5%)
             
-            # Ensure correct feature order
-            feature_order = ['match_score', 'skill_count', 'years_of_experience', 'education_score']
-            input_df = input_df[feature_order]
+            # Normalize Skill Depth: assuming 15+ skills is "full depth"
+            skill_depth_score = min(skill_count / 15.0, 1.0) * 100
             
-            # 2. Predict probability using predict_proba
-            # Returns [prob_0, prob_1]
-            prob_1 = self.model.predict_proba(input_df)[0][1]
-            probability = float(prob_1) * 100.0
+            # Normalize Experience: assuming 8+ years is "senior/full points"
+            exp_points = min(years_exp / 8.0, 1.0) * 100
             
-            # 3. Apply smoothing for realism (5-95% range)
-            if probability < 5:
-                # Set to random between 5-15
-                probability = random.uniform(5.0, 15.0)
-            elif probability > 95:
-                # Cap at 95
-                probability = 95.0
+            # Normalize Education: (1-5 range) -> 1=20, 3=60, 5=100
+            edu_points = (edu_score / 5.0) * 100
+
+            probability = (
+                (match_score * 0.70) + 
+                (skill_depth_score * 0.10) + 
+                (exp_points * 0.15) + 
+                (edu_points * 0.05)
+            )
+
+            # 3. Add Model Influence IF available (Optional blend)
+            if self.model is not None:
+                try:
+                    norm_features = {
+                        'skill_match_score': match_score / 100.0,
+                        'skill_count': min(skill_count / 20.0, 1.0),
+                        'years_of_experience': min(years_exp / 10.0, 1.0),
+                        'education_score': (max(1, min(5, edu_score)) - 1) / 4.0
+                    }
+                    input_df = pd.DataFrame([norm_features])
+                    input_df = input_df[['skill_match_score', 'skill_count', 'years_of_experience', 'education_score']]
+                    model_prob = float(self.model.predict_proba(input_df)[0][1]) * 100.0
+                    
+                    # Blend: 70% Formula, 30% ML Model for refinement
+                    probability = (probability * 0.7) + (model_prob * 0.3)
+                except Exception:
+                    pass # Fallback to formula only
+
+            # Clamp between 0-100
+            probability = max(0.0, min(100.0, probability))
                 
             return round(probability, 2)
         except Exception as e:
