@@ -131,4 +131,3 @@ npm run dev
 **Kaif Khan**  
 🔗 [GitHub](https://github.com/Kaifkhan1212) | 📧 kaif01450@gmail.com  
 *Building the future of AI-driven career intelligence with Groq LPU technology.*
-

@@ -15,6 +15,9 @@ venv/
 # =========================
 # ML Models
 # =========================
+# Allow selection model for deployment
+!ml_models/selection_model.pkl
+# Keep other pkl files ignored if desired
 *.pkl
 *.joblib
 
