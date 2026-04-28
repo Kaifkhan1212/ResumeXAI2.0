@@ -52,7 +52,7 @@ function Dashboard() {
 
                     <div className="flex items-center gap-6">
                         <a 
-                            href="https://github.com/Kaifkhan1212/-AI-Resume-Analyzer" 
+                            href="https://github.com/Kaifkhan1212/ResumeXAI2.0" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="hidden md:flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-colors"

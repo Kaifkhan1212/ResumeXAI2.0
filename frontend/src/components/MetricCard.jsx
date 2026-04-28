@@ -58,7 +58,7 @@ const MetricCard = ({ title, value, type, suffix = "%", label = "", index = 0 })
         >
             {/* Dynamic Glow */}
             <div 
-                className="absolute -inset-24 opacity-0 group-hover:opacity-20 transition-opacity duration-1000 blur-[60px] pointer-events-none"
+                className="absolute -inset-24 opacity-0 group-hover:opacity-20 transition-opacity duration-1000 blur-[60px] pointer-events-none pdf-hide"
                 style={{ background: `radial-gradient(circle, ${colors.primary} 0%, transparent 70%)` }}
             />
 

@@ -10,7 +10,7 @@ const SuggestionsPanel = ({ suggestions }) => {
                 animate={{ opacity: 1, scale: 1 }}
                 whileHover={{ y: -5, transition: { duration: 0.3 } }}
                 transition={{ delay: 0.4, duration: 0.8 }}
-                className="p-10 rounded-[3rem] bg-white/[0.02] border border-white/10 backdrop-blur-2xl shadow-2xl relative overflow-hidden group"
+                className="p-6 sm:p-10 rounded-3xl sm:rounded-[3rem] bg-white/[0.02] border border-white/10 backdrop-blur-2xl shadow-2xl relative overflow-hidden group"
             >
                 {/* Background Decoration */}
                 <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none group-hover:bg-blue-500/10 transition-colors duration-1000 pdf-hide" />
@@ -43,7 +43,7 @@ const SuggestionsPanel = ({ suggestions }) => {
                             </div>
                             <div className="space-y-1 flex-1">
                                 <p className="text-[#a2abc1] font-medium leading-relaxed group-hover/item:text-white transition-colors duration-300">{suggestion}</p>
-                                <div className="h-0.5 w-0 group-hover/item:w-12 bg-blue-500/30 transition-all duration-500 rounded-full" />
+                                <div className="h-0.5 w-0 group-hover/item:w-12 bg-blue-500/30 transition-all duration-500 rounded-full pdf-hide" />
                             </div>
                         </motion.div>
                     ))}

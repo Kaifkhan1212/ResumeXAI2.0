@@ -36,8 +36,8 @@ const UploadForm = ({ onAnalyze, isLoading }) => {
                 <div className="absolute -top-24 -left-24 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none group-hover/container:bg-blue-500/20 transition-colors duration-1000" />
                 <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none group-hover/container:bg-indigo-500/20 transition-colors duration-1000" />
 
-                <div className="p-8 md:p-12 bg-[#0b0e14]/80 rounded-[2.9rem] relative z-10">
-                    <form onSubmit={handleSubmit} className="space-y-16">
+                <div className="p-6 md:p-12 bg-[#0b0e14]/80 rounded-[2.9rem] relative z-10">
+                    <form onSubmit={handleSubmit} className="space-y-12 md:space-y-16">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                             {/* File Section */}
                             <div className="space-y-6">
@@ -148,7 +148,7 @@ const UploadForm = ({ onAnalyze, isLoading }) => {
                                         value={jd}
                                         onChange={(e) => setJd(e.target.value)}
                                         placeholder="Paste the Job Description here..."
-                                        className="w-full h-full p-10 pb-24 rounded-[2.5rem] bg-white/[0.01] border-2 border-white/5 focus:border-indigo-500/30 focus:bg-indigo-500/[0.02] outline-none transition-all resize-none text-slate-300 font-medium placeholder:text-slate-700 leading-relaxed tracking-tight"
+                                        className="w-full h-full p-6 sm:p-10 pb-20 sm:pb-24 rounded-3xl sm:rounded-[2.5rem] bg-white/[0.01] border-2 border-white/5 focus:border-indigo-500/30 focus:bg-indigo-500/[0.02] outline-none transition-all resize-none text-slate-300 font-medium placeholder:text-slate-700 leading-relaxed tracking-tight"
                                     ></textarea>
                                     
                                     <div className="absolute bottom-10 right-10 pointer-events-none opacity-[0.03] group-focus-within/textarea:opacity-[0.08] transition-opacity duration-700">

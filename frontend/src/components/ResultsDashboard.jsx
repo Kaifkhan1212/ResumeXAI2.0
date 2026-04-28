@@ -74,7 +74,7 @@ const ResultsDashboard = ({ data, onReset }) => {
             pdf.save(fileName);
         } catch (error) {
             console.error('PDF Export Error:', error);
-            alert('Selection too large or rendering error. Please try again.');
+            alert('Export failed: ' + (error.message || error.toString() || 'Unknown rendering error'));
         } finally {
             if (downloadBtn) downloadBtn.style.display = 'flex';
         }
@@ -141,7 +141,7 @@ const ResultsDashboard = ({ data, onReset }) => {
                 </motion.div>
             </div>
 
-            <div id="report-content" className="space-y-20 p-8 lg:p-12">
+            <div id="report-content" className="space-y-16 sm:space-y-20 p-4 sm:p-8 lg:p-12">
                 {/* Report Header (Visible in PDF) */}
                 {data.candidate_name && (
                     <motion.div 
@@ -226,29 +226,47 @@ const ResultsDashboard = ({ data, onReset }) => {
                 {/* Full-Width Resume Feedback Section */}
                 <motion.div 
                     variants={itemVariants}
-                    whileHover={{ scale: 1.005 }}
-                    className="mt-16 p-12 rounded-[3.5rem] bg-white/[0.01] border border-dashed border-white/10 group hover:border-blue-500/30 hover:bg-blue-500/[0.02] transition-all duration-700 relative overflow-hidden shadow-2xl"
+                    className="mt-16 p-6 sm:p-12 rounded-3xl sm:rounded-[3.5rem] bg-white/[0.01] border border-dashed border-white/10 group hover:border-blue-500/30 hover:bg-blue-500/[0.02] transition-all duration-700 relative overflow-hidden shadow-2xl"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="flex items-start gap-8 relative z-10">
-                        <div className="p-5 bg-indigo-500/10 rounded-[2rem] text-indigo-400 group-hover:scale-110 -rotate-3 group-hover:rotate-0 transition-all duration-700 shadow-lg shadow-indigo-500/10 shrink-0">
-                            <AlertCircle size={32} className="opacity-40" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pdf-hide" />
+                    
+                    <div className="flex items-center gap-5 mb-12 relative z-10">
+                        <div className="p-3.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 text-indigo-400 shadow-lg shadow-indigo-500/10 shrink-0">
+                            <AlertCircle size={28} className="animate-pulse" />
                         </div>
-                        <div className="space-y-6 flex-1">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <h4 className="text-[10px] uppercase tracking-[0.5em] font-black text-slate-600">Resume Feedback</h4>
-                                    <div className="h-px w-24 bg-white/5" />
-                                </div>
-                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.05]">
-                                    <Sparkles size={10} className="text-blue-400 animate-pulse" />
-                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">AI Insight</span>
-                                </div>
+                        <div>
+                            <h3 className="text-2xl font-black tracking-tight text-white">Resume Feedback</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                                <div className="w-1 h-1 rounded-full bg-indigo-500 animate-ping" />
+                                <p className="text-[9px] uppercase tracking-[0.4em] font-black text-slate-600">AI Insight</p>
                             </div>
-                            <p className="text-xl font-medium text-white leading-relaxed tracking-tight">
-                                {data.overall_feedback}
-                            </p>
                         </div>
+                    </div>
+
+                    <div className="flex flex-col gap-5 relative z-10">
+                        {(Array.isArray(data.overall_feedback) 
+                            ? data.overall_feedback 
+                            : (data.overall_feedback || '').split(/\.(?=\s|$)/).filter(s => s.trim().length > 0).map(s => s.trim() + '.')
+                        ).map((point, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                whileHover={{ x: 10, backgroundColor: 'rgba(255, 255, 255, 0.04)' }}
+                                transition={{ delay: 0.2 + (i * 0.1), type: "spring", stiffness: 100 }}
+                                className="group/item p-6 bg-white/[0.01] border border-white/[0.03] rounded-[2rem] flex items-start gap-6 hover:border-indigo-500/20 transition-all duration-300"
+                            >
+                                <div className="mt-1 w-10 h-10 flex shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 text-[11px] font-black group-hover/item:bg-indigo-600 group-hover/item:text-white group-hover/item:shadow-lg group-hover/item:shadow-indigo-500/40 transition-all duration-500">
+                                    {String(i + 1).padStart(2, '0')}
+                                </div>
+                                <div className="space-y-2 flex-1">
+                                    <p className="text-[#a2abc1] font-medium leading-relaxed group-hover/item:text-white transition-colors duration-300">
+                                        {point}
+                                    </p>
+                                    <div className="h-0.5 w-0 group-hover/item:w-12 bg-indigo-500/30 transition-all duration-500 rounded-full pdf-hide" />
+                                </div>
+                            </motion.div>
+                        ))}
                     </div>
                 </motion.div>
             </div>
@@ -261,7 +279,7 @@ const ResultsDashboard = ({ data, onReset }) => {
                     <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                     <span>ResumeXAI AI Intelligence</span>
                 </div>
-                <span className="mt-6 md:mt-0 opacity-100">© 2026 ResumeXAI</span>
+                <span className="mt-6 md:mt-0 opacity-100">© 2026 Kaif Khan. All rights reserved.</span>
             </motion.footer>
         </motion.div>
     );
