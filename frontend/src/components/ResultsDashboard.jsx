@@ -219,7 +219,10 @@ const ResultsDashboard = ({ data, onReset }) => {
                         <SuggestionsPanel
                             suggestions={data.improvement_suggestions}
                         />
-                        <ExecutiveEvaluation feedback={data.summary} />
+                        {/* Desktop Executive Evaluation */}
+                        <div className="hidden lg:block">
+                            <ExecutiveEvaluation feedback={data.summary} />
+                        </div>
                     </motion.div>
                 </div>
 
@@ -269,6 +272,10 @@ const ResultsDashboard = ({ data, onReset }) => {
                         ))}
                     </div>
                 </motion.div>
+                {/* Mobile Executive Evaluation */}
+                <div className="block lg:hidden mt-16">
+                    <ExecutiveEvaluation feedback={data.summary} />
+                </div>
             </div>
             
             <motion.footer 
