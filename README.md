@@ -6,24 +6,24 @@ ResumeXAI 2.0 is a premium, production-grade AI SaaS platform designed for profe
 
 ## 🎨 Design Philosophy: "Obsidian Architect"
 
-The platform features a high-end, editorial user experience inspired by the aesthetic standards of top-tier enterprise SaaS products. The interface focuses on:
+The platform features a high-end, editorial user experience inspired by the aesthetic standards of top-tier enterprise SaaS products (e.g., Vercel, Linear). The interface focuses on:
 
-- **Glassmorphism:** Layered surfaces with high-diffusion blurs and tonal transparency.
-- **Atmospheric Depth:** Deep obsidian backgrounds (`#0b0e14`) with subtle, animated indigo/blue glows.
-- **Fluid Motion Physics:** Smooth transitions and spring-based animations powered by **Framer Motion**.
-- **Responsive Layout:** Perfectly engineered media queries that scale from desktop displays down to comfortable mobile experiences.
-- **Optimized Layout:** Smart grid distribution with full-width, bullet-pointed executive feedback sections for maximum readability.
+- **SaaS-Grade Landing Experience:** A dynamic hero section featuring masked grid patterns, deep obsidian backgrounds (`#0b0e14`), and subtle indigo/blue glows.
+- **Glassmorphism Components:** Layered UI elements utilizing backdrop filters and tonal transparency for maximum depth.
+- **Fluid Micro-interactions:** Smooth spring-based animations, drag-and-drop scanner visuals, and hover-lift effects powered by **Framer Motion**.
+- **Interactive Data Visualization:** Complex AI feedback is delivered through animated accordions, dynamic severity badges, and structured timeline roadmaps.
+- **PDF-Optimized:** Seamlessly transitions from a highly interactive web interface into a clean, printable A4 PDF document using custom rendering logic.
 
 ---
 
 ## 🌟 Elite Features
 
-- **Obsidian Dashboard:** A visually stunning interactive workspace for seamless resume-JD matching.
-- **Semantic Matching Engine:** AI-powered competency evaluation that goes beyond keywords to understand synonyms and implied experience.
-- **Selection Probability:** ML-powered algorithm that calculates the probability of hiring success based on skill depth and experience.
-- **AI Detection Score:** Neural evaluation to identify AI-generated components, featuring a **Strict Warning System** to detect ChatGPT-generated resumes.
-- **Actionable AI Insights:** Transforms raw AI reasoning into structured, easy-to-read, numbered key points for both "Areas to Improve" and "Resume Feedback".
-- **Verified PDF Reports:** Export beautifully formatted, dynamic reports directly from the web browser to a PDF using `html2canvas` and `jsPDF`, strictly tailored to exclude complex UI animations for a clean, professional printout.
+- **Interactive Feedback System:** Transforms static text into an expandable, glassmorphic accordion with severity-based color coding (Critical, Positive, Warning, Note).
+- **Strategic Roadmap View:** "Areas to Improve" are presented as a vertical, animated timeline roadmap, guiding the user step-by-step through resume optimization.
+- **Semantic Matching Engine:** Evaluates competency beyond keywords, deeply understanding synonyms and implied experience via Google Gemini/Groq LLMs.
+- **Selection Probability:** ML-powered algorithm that calculates the probability of hiring success.
+- **AI Detection Score:** Neural evaluation to identify AI-generated text, ensuring authenticity.
+- **Exportable PDF Reports:** Instantly generates a professional report (`html2canvas` + `jsPDF`) that automatically strips complex UI animations for a perfect, clean printout.
 
 ---
 
@@ -31,9 +31,9 @@ The platform features a high-end, editorial user experience inspired by the aest
 
 ### Frontend Ecosystem
 - **Core:** React 18 (Vite)
-- **Styling:** Vanilla CSS + Tailwind CSS
-- **Animation:** Framer Motion (Optimized for instant report delivery)
-- **PDF Engine:** `html2canvas` + `jsPDF` (Custom cloning logic to handle CSS filters)
+- **Styling:** Tailwind CSS (Custom thematic configuration)
+- **Animation:** Framer Motion (Layout transitions, staggered entrances)
+- **PDF Engine:** `html2canvas` + `jsPDF` (Custom cloning logic, automated overflow-hidden removal for perfect typography)
 
 ### Backend & AI
 - **Framework:** FastAPI (Python 3.10+)
@@ -45,13 +45,13 @@ The platform features a high-end, editorial user experience inspired by the aest
 
 ## 🔄 Analysis Pipeline
 
-1. **Upload:** Ingestion of Resume (PDF/DOCX) and Job Description via the glassmorphism interface.
-2. **Text Extraction:** Specialized parsers read the binary document data.
-3. **Semantic Matching:** AI evaluates resume text against JD requirements using a deep competency-based cross-match.
-4. **Statistical Scoring:** NLP engines compute semantic overlap while ML models predict shortlisting likelihood.
-5. **Authencity Audit:** Detectors evaluate linguistic patterns for AI-generation probability.
-6. **Executive Feedback:** System generates comprehensive, multi-paragraph reasoning parsed cleanly into structured bullet points.
-7. **Export:** Generation of a professional PDF report with persistent executive branding.
+1. **Ingestion:** Users upload a Resume (PDF/DOCX) and Job Description via an interactive, pulsing drag-and-drop scanner zone.
+2. **Text Extraction:** Python-based parsers extract semantic text structure from the binary document.
+3. **LLM Evaluation:** AI cross-matches the candidate's skills against the JD requirements, producing a deep competency evaluation.
+4. **Statistical Scoring:** NLP engines and ML models calculate Match Score, Selection Probability, and AI Authenticity.
+5. **UI Orchestration:** The React frontend parses the raw AI data, mapping specific text cues to visual severity states (e.g., mapping "missing skill" to a glowing red 'Critical' badge).
+6. **Executive Review:** Users navigate their results through an intuitive Dashboard, exploring insights via the Feedback Accordion and Timeline Roadmap.
+7. **Export:** Users can generate a pixel-perfect PDF report containing all generated insights.
 
 ---
 

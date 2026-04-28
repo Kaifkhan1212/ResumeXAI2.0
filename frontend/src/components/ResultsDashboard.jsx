@@ -5,6 +5,7 @@ import SkillTags from './SkillTags';
 import SuggestionsPanel from './SuggestionsPanel';
 import AIContext from './AIContext';
 import ExecutiveEvaluation from './ExecutiveEvaluation';
+import ResumeFeedbackAccordion from './ResumeFeedbackAccordion';
 import { ArrowLeft, Download, ShieldCheck, Sparkles, FileText, Zap, AlertCircle } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -46,6 +47,13 @@ const ResultsDashboard = ({ data, onReset }) => {
                             el.style.opacity = '1';
                             el.style.transform = 'none';
                             el.style.visibility = 'visible';
+                        });
+
+                        // Fix overflow issues that cut text by forcing overflow visible on the clone
+                        const overflowElements = clonedContent.querySelectorAll('.overflow-hidden');
+                        overflowElements.forEach(el => {
+                            el.style.overflow = 'visible';
+                            el.classList.remove('overflow-hidden');
                         });
 
                         // Hide decorative elements that break in html2canvas
@@ -227,51 +235,7 @@ const ResultsDashboard = ({ data, onReset }) => {
                 </div>
 
                 {/* Full-Width Resume Feedback Section */}
-                <motion.div 
-                    variants={itemVariants}
-                    className="mt-16 p-6 sm:p-12 rounded-3xl sm:rounded-[3.5rem] bg-white/[0.01] border border-dashed border-white/10 group hover:border-blue-500/30 hover:bg-blue-500/[0.02] transition-all duration-700 relative overflow-hidden shadow-2xl"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pdf-hide" />
-                    
-                    <div className="flex items-center gap-5 mb-12 relative z-10">
-                        <div className="p-3.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 text-indigo-400 shadow-lg shadow-indigo-500/10 shrink-0">
-                            <AlertCircle size={28} className="animate-pulse" />
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-black tracking-tight text-white">Resume Feedback</h3>
-                            <div className="flex items-center gap-2 mt-1">
-                                <div className="w-1 h-1 rounded-full bg-indigo-500 animate-ping" />
-                                <p className="text-[9px] uppercase tracking-[0.4em] font-black text-slate-600">AI Insight</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col gap-5 relative z-10">
-                        {(Array.isArray(data.overall_feedback) 
-                            ? data.overall_feedback 
-                            : (data.overall_feedback || '').split(/\.(?=\s|$)/).filter(s => s.trim().length > 0).map(s => s.trim() + '.')
-                        ).map((point, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                whileHover={{ x: 10, backgroundColor: 'rgba(255, 255, 255, 0.04)' }}
-                                transition={{ delay: 0.2 + (i * 0.1), type: "spring", stiffness: 100 }}
-                                className="group/item p-6 bg-white/[0.01] border border-white/[0.03] rounded-[2rem] flex items-start gap-6 hover:border-indigo-500/20 transition-all duration-300"
-                            >
-                                <div className="mt-1 w-10 h-10 flex shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 text-[11px] font-black group-hover/item:bg-indigo-600 group-hover/item:text-white group-hover/item:shadow-lg group-hover/item:shadow-indigo-500/40 transition-all duration-500">
-                                    {String(i + 1).padStart(2, '0')}
-                                </div>
-                                <div className="space-y-2 flex-1">
-                                    <p className="text-[#a2abc1] font-medium leading-relaxed group-hover/item:text-white transition-colors duration-300">
-                                        {point}
-                                    </p>
-                                    <div className="h-0.5 w-0 group-hover/item:w-12 bg-indigo-500/30 transition-all duration-500 rounded-full pdf-hide" />
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </motion.div>
+                <ResumeFeedbackAccordion feedbackData={data.overall_feedback} />
                 {/* Mobile Executive Evaluation */}
                 <div className="block lg:hidden mt-16">
                     <ExecutiveEvaluation feedback={data.summary} />

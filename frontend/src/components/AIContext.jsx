@@ -1,55 +1,56 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Sparkles, Cpu } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Brain, Cpu, ChevronRight } from 'lucide-react';
 
 const AIContext = ({ reasoning }) => {
+    // Split reasoning into sentences for points
+    const points = reasoning
+        ? reasoning.split(/\.(?=\s|$)/).filter(s => s.trim().length > 0).map(s => s.trim() + '.')
+        : [];
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 1 }}
-            className="relative p-10 rounded-[3rem] bg-white/[0.02] border border-white/10 backdrop-blur-2xl overflow-hidden group shadow-2xl"
+            className="relative p-8 md:p-10 rounded-[3rem] bg-[#0f1219] border border-purple-500/20 shadow-[0_0_40px_-15px_rgba(168,85,247,0.2)] overflow-hidden group"
         >
-            {/* Animated Glow Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/5 opacity-30 pointer-events-none pdf-hide" />
-            
-            <Brain className="absolute -right-16 -bottom-16 w-64 h-64 text-blue-500/5 -rotate-12 pointer-events-none group-hover:text-blue-500/10 group-hover:scale-110 transition-all duration-1000 pdf-hide" />
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5 opacity-50 pointer-events-none pdf-hide" />
+            <Brain className="absolute -right-16 -bottom-16 w-64 h-64 text-purple-500/5 -rotate-12 pointer-events-none group-hover:text-purple-500/10 group-hover:scale-110 transition-all duration-1000 pdf-hide" />
             
             <div className="relative z-10">
-                <div className="flex items-center justify-between mb-10">
-                    <div className="flex items-center gap-3">
-                        <div className="relative flex items-center justify-center">
-                            <div className="absolute inset-0 bg-blue-500/20 blur-lg rounded-full animate-pulse" />
-                            <div className="relative p-2.5 bg-blue-500/10 rounded-xl border border-blue-500/20 text-blue-400">
-                                <Cpu size={20} className="animate-pulse" />
-                            </div>
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-purple-500/10 rounded-2xl border border-purple-500/30 text-purple-400 shadow-[0_0_20px_-5px_rgba(168,85,247,0.4)]">
+                            <Cpu size={24} className="animate-pulse" />
                         </div>
                         <div>
-                            <h4 className="text-[10px] uppercase tracking-[0.4em] font-black text-blue-500/80">Analysis Detail</h4>
-                            <p className="text-[9px] uppercase tracking-widest font-bold text-slate-600">AI Reasoning</p>
+                            <h3 className="text-2xl font-black tracking-tight text-white">Analysis Detail</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-ping" />
+                                <p className="text-[10px] uppercase tracking-[0.4em] font-black text-purple-400/80">AI Reasoning</p>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/5 border border-blue-500/10">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping" />
-                        <span className="text-[9px] font-black text-blue-400/80 uppercase tracking-widest">Insights</span>
-                    </div>
                 </div>
                 
-                <div className="relative">
-                    <Sparkles className="absolute -top-6 -left-6 text-blue-500/20 w-12 h-12 rotate-12" />
-                    <p className="text-xl md:text-2xl font-medium leading-relaxed text-slate-200 indent-12 italic min-h-[100px]">
-                        "{reasoning}"
-                    </p>
-                </div>
-                
-                <div className="mt-12 flex items-center gap-6">
-                    <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
-                    <div className="flex gap-2">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="w-1 h-1 rounded-full bg-blue-500/20" />
-                        ))}
-                    </div>
+                <div className="space-y-3">
+                    {points.map((point, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.8 + (i * 0.1) }}
+                            className="flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] hover:bg-purple-500/[0.05] border border-transparent hover:border-purple-500/20 transition-all duration-300"
+                        >
+                            <div className="mt-1 flex-shrink-0">
+                                <ChevronRight size={18} className="text-purple-400" />
+                            </div>
+                            <p className="text-slate-300 leading-relaxed text-sm md:text-base font-medium">
+                                {point}
+                            </p>
+                        </motion.div>
+                    ))}
                 </div>
             </div>
         </motion.div>
