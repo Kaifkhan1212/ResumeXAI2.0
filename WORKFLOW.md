@@ -1,12 +1,12 @@
-# System Workflow – ResumeXAI 🛠️
+# System Workflow – ResumeXAI 2.0 🛠️
 
-This document details the end-to-end technical workflow of the **ResumeXAI – AI Powered Resume Analysis System**. It covers everything from user authentication to the final AI-driven evaluation report.
+This document details the end-to-end technical workflow of the **ResumeXAI 2.0 – AI Powered Resume Analysis System**. It covers everything from user authentication to the final AI-driven evaluation report.
 
 ---
 
 ## 1. User Authentication
 
-The platform requires users to authenticate before accessing the Resume Analysis Dashboard.
+The platform requires users to authenticate before accessing the Resume Analysis Dashboard. 
 
 **Authentication Methods:**
 - Email & Password Login
@@ -18,8 +18,8 @@ The platform requires users to authenticate before accessing the Resume Analysis
 3. **Email/Password**: Credentials are sent to the FastAPI `/auth/login` endpoint.
 4. **Google Login**: User authenticates via Google; an OAuth ID token is returned to the frontend.
 5. **Validation**: Backend verifies either the local credentials or the Google ID token.
-6. **JWT Generation**: A secure **JWT Access Token** is generated for the session.
-7. **Storage**: The token is stored in the browser's `localStorage`.
+6. **JWT Generation**: A secure **JWT Access Token** is generated for the session, configured with a long-term expiration (e.g. 30 days) for seamless "Remember Me" functionality.
+7. **Storage**: The token is persistently stored in the browser's `localStorage` to survive tab closures.
 8. **Redirect**: User is securely redirected to the **Resume Analysis Dashboard**.
 
 ---
@@ -38,11 +38,10 @@ After authentication, users can interact with the main analysis interface.
 
 ## 3. Resume Processing Pipeline
 
-- **Step 1 – Resume Text Extraction**: The system uses specialized parsers (`PyPDF2`, `python-docx`) to extract raw text from binary files.
-- **Step 2 – AI Name Extraction**: The `Orchestrator` calls a Gemini-based service to identify the candidate's name from the raw text for the Executive Header.
-- **Step 3 – AI Skill Discovery**: Google Gemini analyzes the resume to extract technical skills, normalizes them, and identifies deep semantic overlap with the JD.
-- **Step 4 – Statistical NLP Analysis**: The system applies **TF-IDF Vectorization** and **Cosine Similarity** to provide a numerical "Match Score" baseline.
-- **Step 5 – ML Evaluation**: A trained **Logistic Regression** model predicts the shortlist probability.
+- **Step 1 – Resume Text Extraction**: The system uses specialized parsers to extract raw text from binary files.
+- **Step 2 – AI Skill Discovery**: Language models analyze the resume to extract technical skills, normalize them, and identify deep semantic overlap with the JD.
+- **Step 3 – Statistical NLP Analysis**: The system applies **TF-IDF Vectorization** and **Cosine Similarity** to provide a numerical "Match Score" baseline.
+- **Step 4 – ML Evaluation**: A trained **Logistic Regression** model predicts the shortlist probability based on skill density and similarity.
 
 ---
 
@@ -60,7 +59,7 @@ A trained **Logistic Regression** model (Binary Classification) evaluates the ca
 
 ## 5. AI Generated Content Detection
 
-The system evaluates the language patterns of the resume to identify AI-generated components.
+The system evaluates the language patterns of the resume to identify AI-generated components. This is critical in today's landscape of LLM-generated applications.
 
 **Alert Logic:**
 - **Score < 20% (Low)**: Emerald (Natural/Safe)
@@ -70,24 +69,25 @@ The system evaluates the language patterns of the resume to identify AI-generate
 
 ---
 
-## 6. Executive Generative AI (Google Gemini)
+## 6. Executive Generative AI 
 
-The system leverages **gemini-flash-latest** to providing deep qualitative insights.
+The system leverages Generative AI (like Google Gemini / Groq) to provide deep qualitative insights.
 
 **Generated Reports:**
-- **Executive Reasoning**: A multi-paragraph, 150+ word analysis of clinical detail, structural tells, and data-backed evidence.
-- **Strategic Recommendations**: 6+ high-impact suggestions including specific technical phrases and sections to optimize.
-- **Analysis Final Assessment**: A 200+ word deep-dive into how the candidate can bridge the gap.
+- **Executive Reasoning**: A qualitative analysis of clinical detail, structural tells, and data-backed evidence.
+- **Strategic Recommendations**: High-impact suggestions formatted into beautiful, numbered UI cards to optimize specific technical phrases and sections.
+- **Resume Feedback**: A structured, parsed breakdown of actionable advice presented in a numbered key-point format for enhanced readability.
 
 ---
 
 ## 7. Result Visualization & Export
 
-The React dashboard renders the intelligence with optimized performance:
+The React dashboard renders the intelligence with optimized performance across all devices (Desktop, Tablet, Mobile):
 
-- **Instant Delivery**: Typewriter animations are removed to ensure reports are "ready-to-read" immediately.
-- **PDF Report Engine**: Utilizing `html2canvas` with custom visibility overrides to capture a **single-page dynamic height report**.
-- **Executive Header**: The export includes a professional header with the candidate's name, report ID, and timestamp.
+- **Structured UI**: Feedback is auto-parsed into distinct, hoverable key-point cards rather than massive text blocks.
+- **Mobile Responsive**: Custom Tailwind media queries adapt padding, border-radii, and layout structures for smaller screens seamlessly.
+- **PDF Report Engine**: Utilizing `html2canvas` and `jsPDF`. The frontend implements custom cloning logic and a `pdf-hide` class utility to dynamically strip out complex UI animations (like glassmorphism glows and zero-width elements) to ensure a perfectly clean, high-contrast, printable PDF document without rendering crashes.
+- **Executive Footer**: The export includes professional branding and copyright metadata (© 2026 Kaif Khan).
 
 ---
 
@@ -97,15 +97,14 @@ The React dashboard renders the intelligence with optimized performance:
 graph TD
     A[User Login] --> B[Resume & JD Submission]
     B --> C[Text Extraction]
-    C --> D[AI Name Extraction]
-    D --> E[AI Skill Discovery & Normalization]
-    E --> F[NLP & ML Statistical Scoring]
-    F --> G[AI Content Warning Audit]
-    G --> H[Gemini reasoning & executive advice]
-    H --> I[Structured JSON Payload]
-    I --> J[Instant Dashboard Visualization]
-    J --> K[Dynamic PDF Report Export]
+    C --> D[AI Skill Discovery & Normalization]
+    D --> E[NLP & ML Statistical Scoring]
+    E --> F[AI Content Warning Audit]
+    F --> G[Generative Reasoning & Executive Advice]
+    G --> H[Structured JSON Payload]
+    H --> I[Instant Dashboard Visualization]
+    I --> J[Dynamic PDF Report Export]
 ```
 
 ---
-*Technical Documentation for the ResumeXAI Intelligent Evaluation Engine.*
+*Technical Documentation for the ResumeXAI 2.0 Intelligent Evaluation Engine.*
