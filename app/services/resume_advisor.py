@@ -1,19 +1,20 @@
+import re
 import json
 from groq import Groq
 from fastapi import HTTPException, status
 from ..core.config import settings
+from ..core.groq_helper import execute_groq_call, parse_json_from_response
 
 class ResumeAdvisorService:
     def __init__(self):
         if settings.GROQ_API_KEY:
             self.client = Groq(api_key=settings.GROQ_API_KEY)
-            self.model_id = 'llama-3.3-70b-versatile'
+            self.model_id = settings.GROQ_MODEL_ID
         else:
             self.client = None
             self.model_id = None
 
     async def generate_resume_suggestions(self, resume_text: str, jd_text: str, missing_skills: list, match_score: float) -> dict:
-        # Default/Fallback Suggestions based on requirements
         fallback_suggestions = [
             "Add missing technologies such as AWS, Docker, or Microservices.",
             "Include project descriptions demonstrating real-world experience.",
@@ -25,18 +26,17 @@ class ResumeAdvisorService:
             "overall_feedback": "AI summary unavailable. Please review missing skills and improve your resume."
         }
 
-        # Validation check before calling the model
-        if not self.client:
+        if not self.client or not resume_text or resume_text.startswith("ERROR:"):
             return fallback_response
 
         prompt = f"""
         Act as an expert senior executive recruiter and career advisor. Analyze the following resume against the job description with extreme detail.
         
         Resume:
-        {resume_text}
+        {resume_text[:4000]}
         
         Job Description:
-        {jd_text}
+        {jd_text[:4000]}
         
         Identified Gaps (Missing Skills):
         {', '.join(missing_skills)}
@@ -60,28 +60,23 @@ class ResumeAdvisorService:
         """
 
         try:
-            # Main model execution with error handling
-            response = self.client.chat.completions.create(
-                model=self.model_id,
-                messages=[
-                    {"role": "system", "content": "You are an expert senior executive recruiter and career advisor. Return all insights in STRICT JSON format."},
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={"type": "json_object"},
-            )
+            messages = [
+                {"role": "system", "content": "You are an expert senior executive recruiter and career advisor. Return all insights strictly as valid raw JSON with NO extra explanation outside JSON."},
+                {"role": "user", "content": prompt}
+            ]
+            response = await execute_groq_call(self.client, self.model_id, messages)
             
             try:
-                result = json.loads(response.choices[0].message.content)
+                content = response.choices[0].message.content
+                result = parse_json_from_response(content)
                 return result
-            except json.JSONDecodeError:
-                print(f"Groq JSON Parsing Error: {response.text}")
+            except Exception as json_err:
+                print(f"Groq JSON Parsing Error: {json_err}")
                 return fallback_response
 
         except Exception as e:
-            # Log Groq errors clearly for debugging
-            print(f"Groq Error: {e}")
-            import traceback
-            traceback.print_exc()
+            print(f"Groq Advisor Error: {e}")
             return fallback_response
 
 resume_advisor_service = ResumeAdvisorService()
+

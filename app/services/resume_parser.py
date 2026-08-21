@@ -1,6 +1,8 @@
 import io
 import re
 from typing import Optional
+import pypdf
+import pdfplumber
 import PyPDF2
 from docx import Document
 from fastapi import HTTPException, status
@@ -9,44 +11,62 @@ class ResumeParserService:
     @staticmethod
     def clean_text(text: str) -> str:
         """
-        Cleans extracted text by removing extra spaces, normalizing whitespace,
-        and removing special characters.
+        Cleans extracted text by normalizing whitespace while preserving Unicode punctuation.
         """
+        if not text:
+            return ""
         # Normalize whitespace (replace multiple spaces/newlines with single space)
         text = re.sub(r'\s+', ' ', text)
-        
-        # Remove unusual special characters but keep common punctuation
-        # This regex keeps alphanumeric characters and common symbols like @, ., +, #
-        text = re.sub(r'[^\x00-\x7F]+', ' ', text) # Remove non-ASCII
-        
         return text.strip()
 
     async def parse_pdf(self, file_content: bytes) -> str:
+        text = ""
+        # Stage 1: Try pdfplumber (best for multi-column, layout & tables)
         try:
-            pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_content))
-            text = ""
-            for page in pdf_reader.pages:
-                text += page.extract_text() or ""
-            
-            if not text.strip():
-                raise ValueError("PDF file appears to be empty or contains no extractable text.")
-                
-            return self.clean_text(text)
+            with pdfplumber.open(io.BytesIO(file_content)) as pdf:
+                pages_text = []
+                for page in pdf.pages:
+                    page_t = page.extract_text()
+                    if page_t:
+                        pages_text.append(page_t)
+                text = " ".join(pages_text)
         except Exception as e:
+            print(f"pdfplumber extraction error: {e}")
+
+        # Stage 2: Fall back to pypdf if pdfplumber returns empty
+        if not text.strip():
+            try:
+                reader = pypdf.PdfReader(io.BytesIO(file_content))
+                pages_text = [p.extract_text() or "" for p in reader.pages]
+                text = " ".join(pages_text)
+            except Exception as e:
+                print(f"pypdf extraction error: {e}")
+
+        # Stage 3: Fall back to PyPDF2
+        if not text.strip():
+            try:
+                reader = PyPDF2.PdfReader(io.BytesIO(file_content))
+                pages_text = [p.extract_text() or "" for p in reader.pages]
+                text = " ".join(pages_text)
+            except Exception as e:
+                print(f"PyPDF2 extraction error: {e}")
+
+        cleaned = self.clean_text(text)
+        if not cleaned:
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to extract text from PDF: {str(e)}"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Could not extract readable text from PDF file. Please ensure it is not scanned/empty."
             )
+        return cleaned
 
     async def parse_docx(self, file_content: bytes) -> str:
         try:
             doc = Document(io.BytesIO(file_content))
             text = "\n".join([para.text for para in doc.paragraphs])
-            
-            if not text.strip():
-                raise ValueError("DOCX file appears to be empty or contains no text.")
-                
-            return self.clean_text(text)
+            cleaned = self.clean_text(text)
+            if not cleaned:
+                raise ValueError("DOCX file contains no text.")
+            return cleaned
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -60,14 +80,18 @@ class ResumeParserService:
                 detail="File is empty"
             )
 
-        if filename.endswith(".pdf"):
+        lower_filename = filename.lower()
+        if lower_filename.endswith(".pdf"):
             return await self.parse_pdf(file_content)
-        elif filename.endswith(".docx"):
+        elif lower_filename.endswith(".docx"):
             return await self.parse_docx(file_content)
+        elif lower_filename.endswith(".txt"):
+            return self.clean_text(file_content.decode('utf-8', errors='ignore'))
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Unsupported file type. Only PDF and DOCX are allowed."
+                detail="Unsupported file type. Only PDF, DOCX, and TXT are allowed."
             )
 
 resume_parser_service = ResumeParserService()
+

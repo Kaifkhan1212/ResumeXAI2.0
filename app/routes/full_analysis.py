@@ -13,13 +13,13 @@ async def full_analysis(
     db: Session = Depends(get_db)
 ):
     # Validate file
-    allowed_exts = {".pdf", ".docx"}
+    allowed_exts = {".pdf", ".docx", ".txt"}
     file_ext = "." + file.filename.split(".")[-1].lower() if "." in file.filename else ""
     
     if file_ext not in allowed_exts:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Unsupported file type. Use PDF or DOCX."
+            detail="Unsupported file type. Use PDF, DOCX, or TXT."
         )
 
     # Read file content

@@ -14,7 +14,7 @@ class AnalysisOrchestrator:
     def __init__(self):
         if settings.GROQ_API_KEY:
             self.client = Groq(api_key=settings.GROQ_API_KEY)
-            self.model_id = 'llama-3.3-70b-versatile'
+            self.model_id = settings.GROQ_MODEL_ID
         else:
             self.client = None
             self.model_id = None
@@ -52,38 +52,48 @@ class AnalysisOrchestrator:
             return 3
         return 1
 
-    async def _extract_name(self, resume_text: str) -> str:
+    @staticmethod
+    def _extract_name(resume_text: str) -> str:
         """
-        Extract the candidate's name from the resume text using Gemini.
+        Extract the candidate's full name accurately from the resume text.
+        Handles both line-separated and continuous space-separated PDF text.
         """
-        if not self.client:
-            # Fallback: try to find the first line or use a generic name
-            lines = [l.strip() for l in resume_text.split('\n') if l.strip()]
-            return lines[0] if lines else "Candidate"
-
-        prompt = f"""
-        Extract the full name of the candidate from the following resume text.
-        Return ONLY the name as a string, no other text or JSON. If you cannot find a name, return "Candidate".
-        
-        Resume Text:
-        {resume_text[:2000]}  # Send first 2k chars for speed
-        """
-        
-        try:
-            response = self.client.chat.completions.create(
-                model=self.model_id,
-                messages=[
-                    {"role": "system", "content": "Extract the candidate's full name. Return ONLY the name."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            name = response.choices[0].message.content.strip()
-            # Clean up potential artifacts
-            name = name.split('\n')[0].strip()
-            return name if name else "Candidate"
-        except Exception as e:
-            print(f"Name Extraction Error: {e}")
+        if not resume_text or resume_text.startswith("ERROR:"):
             return "Candidate"
+
+        stop_keywords = {
+            'contact', 'email', 'phone', 'mobile', 'tel', 'linkedin', 'github', 
+            'address', 'curriculum', 'resume', 'cv', 'summary', 'profile', 
+            'professional', 'education', 'skills', 'experience', 'projects',
+            'mca', 'bca', 'btech', 'mtech', 'bs', 'ms', 'phd'
+        }
+
+        # 1. Try first lines if newlines exist
+        lines = [l.strip() for l in resume_text.split('\n') if l.strip()]
+        for line in lines[:5]:
+            clean = re.sub(r'\S+@\S+', '', line)
+            clean = re.sub(r'https?://\S+', '', clean)
+            clean = re.sub(r'[\+\d\-\(\)\s]{7,}', '', clean)
+            clean = re.sub(r'[^\w\s]', '', clean).strip()
+            words = clean.split()
+            if 2 <= len(words) <= 4 and not any(w.lower() in stop_keywords for w in words):
+                return " ".join([w.title() for w in words])
+
+        # 2. Extract from words array (handles continuous single-space PDF text)
+        words = resume_text.split()
+        name_tokens = []
+        for w in words[:15]:
+            w_lower = w.lower()
+            if '@' in w or 'http' in w or any(c.isdigit() for c in w) or any(k in w_lower for k in stop_keywords):
+                break
+            clean_token = re.sub(r'[^\w]', '', w)
+            if clean_token:
+                name_tokens.append(clean_token.title())
+
+        if 1 <= len(name_tokens) <= 4:
+            return " ".join(name_tokens)
+
+        return "Candidate"
 
     async def run_pipeline(self, file_content: bytes, filename: str, jd_text: str) -> Dict[str, Any]:
         # 1. Extract Text
@@ -136,7 +146,7 @@ class AnalysisOrchestrator:
             suggestions = {"improvement_suggestions": [], "overall_feedback": "Service unavailable."}
         
         # 7. Extract Name
-        candidate_name = await self._extract_name(resume_text)
+        candidate_name = self._extract_name(resume_text)
         
         # 8. Generate Summary
         summary = self._generate_summary(match_result, selection_prob, ai_detection)

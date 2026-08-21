@@ -30,9 +30,9 @@ def create_app() -> FastAPI:
     def on_startup():
         try:
             init_db()
-            print("Database initialized successfully ✅")
+            print("Database initialized successfully [OK]")
         except Exception as e:
-            print(f"Database initialization failed: {e} ❌")
+            print(f"Database initialization failed: {e} [ERROR]")
             # We don't raise here so the app can still start (useful for health checks)
 
     # CORS Middleware

@@ -7,6 +7,8 @@ psycopg2-binary
 python-dotenv
 python-multipart
 PyPDF2
+pypdf
+pdfplumber
 python-docx
 scikit-learn
 joblib

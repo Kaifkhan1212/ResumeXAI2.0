@@ -1,13 +1,15 @@
+import re
 import json
 from groq import Groq
 from fastapi import HTTPException, status
 from ..core.config import settings
+from ..core.groq_helper import execute_groq_call, parse_json_from_response
 
 class AIDetectorService:
     def __init__(self):
         if settings.GROQ_API_KEY:
             self.client = Groq(api_key=settings.GROQ_API_KEY)
-            self.model_id = 'llama-3.3-70b-versatile'
+            self.model_id = settings.GROQ_MODEL_ID
         else:
             self.client = None
             self.model_id = None
@@ -19,7 +21,7 @@ class AIDetectorService:
             "reasoning": "AI detection service currently unavailable. Using default safety values."
         }
 
-        if not self.client:
+        if not self.client or not resume_text or resume_text.startswith("ERROR:"):
             return fallback_result
 
         prompt = f"""
@@ -35,28 +37,25 @@ class AIDetectorService:
         }}
 
         Resume Text:
-        {resume_text}
+        {resume_text[:4000]}
         """
 
         try:
-            response = self.client.chat.completions.create(
-                model=self.model_id,
-                messages=[
-                    {"role": "system", "content": "You are a professional AI content detector. Analyze text structures and return analysis in STRICT JSON format."},
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={"type": "json_object"},
-            )
+            messages = [
+                {"role": "system", "content": "You are a professional AI content detector. Analyze text structures and return analysis in STRICT JSON format with NO markdown code blocks or extra text."},
+                {"role": "user", "content": prompt}
+            ]
+            response = await execute_groq_call(self.client, self.model_id, messages)
             
-            # Safely parse JSON response
+            # Safely parse JSON response using robust helper
             try:
-                result = json.loads(response.choices[0].message.content)
+                content = response.choices[0].message.content
+                result = parse_json_from_response(content)
                 return result
-            except json.JSONDecodeError:
-                # Fallback in case the model returns something slightly off
-                print(f"AIDetector JSON Error: {response.text}")
+            except Exception as parse_err:
+                print(f"AIDetector JSON Error: {parse_err}")
                 return {
-                    "ai_generated_probability": 15.0, # Slight jitter for unparseable but active response
+                    "ai_generated_probability": 15.0,
                     "confidence_level": "Low",
                     "reasoning": "AI model returned unparseable content. Fallback applied."
                 }
@@ -64,7 +63,7 @@ class AIDetectorService:
         except Exception as e:
             import traceback
             print(f"AIDetector General Error: {e}")
-            traceback.print_exc()
             return fallback_result
 
 ai_detector_service = AIDetectorService()
+
