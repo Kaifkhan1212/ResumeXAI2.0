@@ -19,5 +19,6 @@ groq
 passlib[bcrypt]
 bcrypt==4.0.1
 python-jose[cryptography]
+psycopg[binary]>=3.2,<4
 google-auth
 # Add other dependencies here
